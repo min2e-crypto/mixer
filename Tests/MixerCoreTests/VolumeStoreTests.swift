@@ -16,6 +16,13 @@ private func makeDefaults() -> UserDefaults {
         #expect(VolumeStore(defaults: defaults).state(for: "com.apple.Music") == AppVolumeState(volume: 0.4, muted: true))
     }
 
+    @Test(arguments: [Float(1.5), 2])
+    func 부스트_볼륨도_복원한다(volume: Float) {
+        let defaults = makeDefaults()
+        VolumeStore(defaults: defaults).set(AppVolumeState(volume: volume, muted: false), for: "com.apple.Music")
+        #expect(VolumeStore(defaults: defaults).state(for: "com.apple.Music") == AppVolumeState(volume: volume, muted: false))
+    }
+
     @Test func 없는_앱은_nil이다() {
         #expect(VolumeStore(defaults: makeDefaults()).state(for: "com.apple.Music") == nil)
     }

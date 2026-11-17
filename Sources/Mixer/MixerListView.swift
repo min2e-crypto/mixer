@@ -1,5 +1,6 @@
 import AppKit
 import MixerAudio
+import MixerCore
 import SwiftUI
 
 /// 메뉴바 패널과 노치 패널이 함께 쓰는 앱 목록.
@@ -58,7 +59,7 @@ struct AppRow: View {
                     value: Binding(
                         get: { Double(app.state.volume) },
                         set: { controller.setVolume(Float($0), for: app.id) }),
-                    in: 0...1)
+                    in: Double(GainCurve.sliderRange.lowerBound)...Double(GainCurve.sliderRange.upperBound))
                     .controlSize(.small)
                     .disabled(app.isExcluded)
             }

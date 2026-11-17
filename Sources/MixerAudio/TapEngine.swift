@@ -82,6 +82,8 @@ public final class TapEngine {
             kAudioAggregateDeviceTapAutoStartKey: true,
         ]
         try check(AudioHardwareCreateAggregateDevice(aggregateDescription as CFDictionary, &aggregate), "AudioHardwareCreateAggregateDevice")
+        let sampleRate = HAL.scalar(aggregate, kAudioDevicePropertyNominalSampleRate, as: Float64.self) ?? 48000
+        state.limiters = HAL.outputChannelCounts(aggregate).map { PeakLimiter(channels: max($0, 1), sampleRate: sampleRate) }
         try check(AudioDeviceCreateIOProcIDWithBlock(&ioProc, aggregate, nil, state.makeBlock()), "AudioDeviceCreateIOProcIDWithBlock")
         try check(AudioDeviceStart(aggregate, ioProc), "AudioDeviceStart")
         log.info("엔진 시작 aggregate=\(self.aggregate, privacy: .public) objects=\(self.processObjects, privacy: .public) output=\(self.outputDeviceUID, privacy: .public)")
@@ -93,6 +95,8 @@ private final class IOState {
     let targetGain: OpaquePointer
     var currentGain: Float
     var tapChannels = 2
+    /// 출력 버퍼마다 채널 수가 달라 버퍼별로 하나씩, IO proc 생성 전에 미리 만들어 둔다.
+    var limiters: [PeakLimiter] = []
 
     init(gain: Float) {
         targetGain = mixer_atomic_float_create(gain)
@@ -115,15 +119,18 @@ private final class IOState {
                 sourceChannels = Int(inputs[tapIndex].mNumberChannels)
                 sourceFrames = Int(inputs[tapIndex].mDataByteSize) / (MemoryLayout<Float>.size * sourceChannels)
             }
-            for buffer in outputs {
+            for (index, buffer) in outputs.enumerated() {
                 guard let data = buffer.mData, buffer.mNumberChannels > 0 else { continue }
                 let channels = Int(buffer.mNumberChannels)
+                let samples = data.assumingMemoryBound(to: Float.self)
+                let frames = Int(buffer.mDataByteSize) / (MemoryLayout<Float>.size * channels)
                 Render.render(
                     input: source, inputFrames: sourceFrames, inputChannels: sourceChannels,
-                    output: data.assumingMemoryBound(to: Float.self),
-                    outputFrames: Int(buffer.mDataByteSize) / (MemoryLayout<Float>.size * channels),
-                    outputChannels: channels,
+                    output: samples, outputFrames: frames, outputChannels: channels,
                     fromGain: currentGain, toGain: target)
+                if index < limiters.count {
+                    limiters[index].process(samples, frames: frames, channels: channels)
+                }
             }
             currentGain = target
         }

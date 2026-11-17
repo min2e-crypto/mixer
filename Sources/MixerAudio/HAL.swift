@@ -45,6 +45,17 @@ enum HAL {
         return Array(ids.prefix(Int(size) / MemoryLayout<AudioObjectID>.size))
     }
 
+    static func outputChannelCounts(_ device: AudioObjectID) -> [Int] {
+        var address = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyStreamConfiguration, mScope: kAudioObjectPropertyScopeOutput, mElement: kAudioObjectPropertyElementMain)
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(device, &address, 0, nil, &size) == noErr, size > 0 else { return [] }
+        let raw = UnsafeMutableRawPointer.allocate(byteCount: Int(size), alignment: MemoryLayout<AudioBufferList>.alignment)
+        defer { raw.deallocate() }
+        let list = raw.bindMemory(to: AudioBufferList.self, capacity: 1)
+        guard AudioObjectGetPropertyData(device, &address, 0, nil, &size, list) == noErr else { return [] }
+        return UnsafeMutableAudioBufferListPointer(list).map { Int($0.mNumberChannels) }
+    }
+
     static func defaultOutputDevice() -> AudioObjectID? {
         scalar(system, kAudioHardwarePropertyDefaultOutputDevice, as: AudioObjectID.self).flatMap { $0 == kAudioObjectUnknown ? nil : $0 }
     }

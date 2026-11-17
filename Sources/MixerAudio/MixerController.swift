@@ -51,7 +51,7 @@ public final class MixerController: ObservableObject {
 
     public func setVolume(_ volume: Float, for bundleID: String) {
         var state = store.state(for: bundleID) ?? .default
-        state.volume = min(max(volume, 0), 1)
+        state.volume = GainCurve.volume(fromSlider: volume)
         update(state, for: bundleID)
     }
 

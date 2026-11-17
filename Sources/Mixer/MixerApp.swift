@@ -18,10 +18,12 @@ struct MixerMain: App {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let controller = MixerController()
+    private lazy var notch = NotchController(controller: controller)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         LoginItem.registerOnFirstLaunch()
         controller.start()
+        notch.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

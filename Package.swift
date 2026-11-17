@@ -8,6 +8,7 @@ let package = Package(
         .target(name: "MixerCore"),
         .target(name: "MixerAtomics"),
         .target(name: "MixerAudio", dependencies: ["MixerCore", "MixerAtomics"]),
+        .executableTarget(name: "Mixer", dependencies: ["MixerCore", "MixerAudio"]),
         .executableTarget(name: "tapspike", dependencies: ["MixerAudio"]),
         .testTarget(name: "MixerCoreTests", dependencies: ["MixerCore"]),
     ]

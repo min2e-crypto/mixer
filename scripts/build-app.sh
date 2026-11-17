@@ -23,6 +23,8 @@ fi
 swift build -c release --product "$PRODUCT"
 BIN="$(swift build -c release --show-bin-path)/$PRODUCT"
 
+[[ "$TARGET" == mixer ]] && pkill -x Mixer || true
+mkdir -p "$(dirname "$APP")"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 install -m 755 "$BIN" "$APP/Contents/MacOS/$PRODUCT"

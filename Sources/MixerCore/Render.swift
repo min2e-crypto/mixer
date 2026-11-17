@@ -1,7 +1,8 @@
 /// IO 스레드에서 불리므로 할당·락 없이 포인터만 다룬다. 버퍼는 Float32 interleaved로 가정한다.
 public enum Render {
     /// aggregate 입력에는 출력 장치 자체의 입력 스트림이 탭보다 앞에 올 수 있어, 채널 수가 맞는 마지막 버퍼를 탭으로 본다.
-    public static func tapBufferIndex(channelCounts: [Int], tapChannels: Int) -> Int? {
+    public static func tapBufferIndex<Counts: BidirectionalCollection>(channelCounts: Counts, tapChannels: Int) -> Counts.Index?
+    where Counts.Element == Int {
         channelCounts.lastIndex(of: tapChannels)
     }
 

@@ -17,7 +17,7 @@ private func group(_ entries: [AudioProcessEntry], ownPID: Int32 = 999) -> [AppG
             AudioProcessEntry(objectID: 1, pid: 102, bundleID: "com.apple.WebKit.GPU", isPlaying: true),
             AudioProcessEntry(objectID: 2, pid: 100, bundleID: "com.apple.Safari", isPlaying: false),
         ])
-        #expect(result == [AppGroup(identity: apps[100]!, pid: 100, processObjects: [1, 2], isPlaying: true)])
+        #expect(result == [AppGroup(identity: apps[100]!, pid: 100, processObjects: [1, 2], isPlaying: true, isApp: true)])
     }
 
     @Test func 앱마다_따로_묶는다() {
@@ -36,7 +36,7 @@ private func group(_ entries: [AudioProcessEntry], ownPID: Int32 = 999) -> [AppG
 
     @Test func 앱이_없으면_프로세스_번들_ID로_묶는다() {
         let result = group([AudioProcessEntry(objectID: 5, pid: 300, bundleID: "com.example.daemon", isPlaying: true)])
-        #expect(result == [AppGroup(identity: AppIdentity(bundleID: "com.example.daemon", name: "com.example.daemon"), pid: 300, processObjects: [5], isPlaying: true)])
+        #expect(result == [AppGroup(identity: AppIdentity(bundleID: "com.example.daemon", name: "com.example.daemon"), pid: 300, processObjects: [5], isPlaying: true, isApp: false)])
     }
 
     @Test func 앱도_번들_ID도_없으면_제외한다() {

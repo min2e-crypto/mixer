@@ -32,3 +32,19 @@
 - 결정: ObjC 우회 모듈 없이 `CATapDescription(stereoMixdownOfProcesses: [AudioObjectID])`를 쓴다. PID는 `kAudioHardwarePropertyTranslatePIDToProcessObject`로 오디오 프로세스 객체로 바꿔 넘긴다.
 - 근거: macOS 26.6 + Xcode 27.2 SDK의 Swift 오버레이에 이니셜라이저가 있고, 0단계 tapspike에서 탭·aggregate 생성과 IO proc 구동이 성공했다(탭 포맷 48kHz 2ch Float32 interleaved, `afplay -v 0.02` 재생 시 입력 피크 0.00183 = 예상값과 일치). vorssaint의 ObjC 우회는 14.4 초기 SDK 문제 대응이라 이 프로젝트에는 필요 없다.
 - 함께 확인한 것: main.swift 최상위 클로저는 MainActor로 추론되어 IO 스레드에서 런타임 격리 검사에 걸린다. IO 블록은 격리되지 않은 함수나 타입 안에서 만든다. 자체 서명 인증서의 지정 요구사항은 `certificate leaf = H"…"`라 재빌드해도 바뀌지 않는다.
+
+## 007. helper 프로세스는 책임 프로세스(비공개 심볼)로 먼저 앱에 묶는다 (2026-11-18)
+
+- 결정: `ProcessMonitor`는 `responsibility_get_pid_responsible_for_pid`를 `dlsym`으로 찾아 상위 pid로 먼저 쓰고, 심볼이 없거나 자기 자신을 돌려주면 `proc_pidinfo`의 부모 pid로 대신한다. 순수 로직(`AppGrouping`)은 상위 pid를 클로저로만 받는다.
+- 이유: WebKit 계열 XPC helper(`com.apple.WebKit.GPU`)는 부모가 launchd라서 부모 체인으로는 Safari·카카오톡 같은 소유 앱에 닿지 않는다. 2단계에서 실측한 결과 이 심볼은 WebKit.GPU를 소유 앱 pid로 돌려줬다. 이를 대신할 공개 API는 없다.
+- 위험: 비공개 심볼이라 OS 업데이트로 사라질 수 있다. 사라져도 부모 체인으로 동작은 하되, Safari 소리는 앱 행이 아니라 helper 행으로 보일 수 있다.
+
+## 008. 일반 앱에 묶이지 않은 프로세스는 재생 중일 때만 목록에 보인다 (2026-11-18)
+
+- 결정: `AppGroup.isApp`이 false(번들 ID로만 묶인 시스템 프로세스)이면 `isPlaying`일 때만 `MixerController.apps`에 넣는다.
+- 이유: HAL 프로세스 목록에는 loginwindow, corespeechd 같은 데몬이 오디오 연결만 가진 채 늘 들어 있어서, 그대로 보여 주면 목록이 노이즈로 찬다.
+
+## 009. 게인은 C11 원자 변수로 IO 스레드에 넘긴다 (2026-11-18)
+
+- 결정: `MixerAtomics` C 타깃(`_Atomic float`, relaxed load/store)을 둔다.
+- 이유: 최소 OS가 14.4라 macOS 15+ 전용인 `Synchronization.Atomic`을 쓸 수 없고, 외부 패키지 의존은 피한다. IO 블록 한 번에 load 한 번이라 함수 호출 비용은 무시할 만하다.

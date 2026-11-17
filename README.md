@@ -59,5 +59,3 @@ rm -rf ~/Applications/Mixer.app
 ```sh
 swift test
 ```
-
-설계 결정은 [ADR.md](ADR.md), 구현 계획은 [PLAN.md](PLAN.md)에 있습니다.

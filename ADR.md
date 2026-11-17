@@ -26,3 +26,9 @@
 - 결정: 노치 화면에서는 노치를 클릭하면 믹서 패널이 펼쳐진다. 노치 없는 화면에서는 메뉴바 패널을 쓴다. 창은 펼친 크기로 한 번만 잡고 `CAShapeLayer` 마스크 path만 애니메이션하며, `hitTest`를 path로 제한해 클릭을 통과시킨다. 맨 윗줄 클릭은 전역 마우스 모니터로 받는다. 노치 창에는 공개 API만 쓴다.
 - 이유: 마스터가 노치에서 펼치는 방식을 원한다. 창 크기를 프레임마다 바꾸면 깜빡이므로 마스크 방식을 택한다. 전역 마우스 모니터는 TCC 권한이 필요 없다. 비공개 API는 OS 업데이트에 취약하다.
 - 근거: `/Users/home/coding/reverse_engineering/vorssaint-notch-analysis.md`
+
+## 006. 탭 생성은 Swift `CATapDescription` 이니셜라이저를 그대로 쓴다 (2026-11-18)
+
+- 결정: ObjC 우회 모듈 없이 `CATapDescription(stereoMixdownOfProcesses: [AudioObjectID])`를 쓴다. PID는 `kAudioHardwarePropertyTranslatePIDToProcessObject`로 오디오 프로세스 객체로 바꿔 넘긴다.
+- 근거: macOS 26.6 + Xcode 27.2 SDK의 Swift 오버레이에 이니셜라이저가 있고, 0단계 tapspike에서 탭·aggregate 생성과 IO proc 구동이 성공했다(탭 포맷 48kHz 2ch Float32 interleaved, `afplay -v 0.02` 재생 시 입력 피크 0.00183 = 예상값과 일치). vorssaint의 ObjC 우회는 14.4 초기 SDK 문제 대응이라 이 프로젝트에는 필요 없다.
+- 함께 확인한 것: main.swift 최상위 클로저는 MainActor로 추론되어 IO 스레드에서 런타임 격리 검사에 걸린다. IO 블록은 격리되지 않은 함수나 타입 안에서 만든다. 자체 서명 인증서의 지정 요구사항은 `certificate leaf = H"…"`라 재빌드해도 바뀌지 않는다.

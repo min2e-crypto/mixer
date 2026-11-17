@@ -5,6 +5,8 @@ let package = Package(
     name: "mixer",
     platforms: [.macOS("14.4")],
     targets: [
+        .target(name: "MixerCore"),
         .executableTarget(name: "tapspike"),
+        .testTarget(name: "MixerCoreTests", dependencies: ["MixerCore"]),
     ]
 )

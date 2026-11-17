@@ -48,3 +48,9 @@
 
 - 결정: `MixerAtomics` C 타깃(`_Atomic float`, relaxed load/store)을 둔다.
 - 이유: 최소 OS가 14.4라 macOS 15+ 전용인 `Synchronization.Atomic`을 쓸 수 없고, 외부 패키지 의존은 피한다. IO 블록 한 번에 load 한 번이라 함수 호출 비용은 무시할 만하다.
+
+## 010. 노치 클릭은 패널 mouseDown과 전역 마우스 모니터를 둘 다 받는다 (2026-11-18, 3.5-a)
+
+- 측정(자동): 내장 화면 1512×982, 노치 rect (665, 950, 185×32), `safeAreaInsets.top` 32, 메뉴바 높이 33(`frame.maxY - visibleFrame.maxY`). 노치 높이 전체가 메뉴바 높이 안에 들어간다. `notchspike` 패널은 CGWindowList에서 노치 rect와 같은 bounds, 레이어 26(statusBar+1)으로 확인했다.
+- 측정하지 못한 것: 실제 클릭이 높이별로 패널 `mouseDown`과 전역 모니터 중 어디로 가는지. 작업 셸에 손쉬운 사용 권한이 없어 합성 클릭을 보낼 수 없었다. `swift run notchspike 60`으로 마스터가 직접 확인한다.
+- 결정: 결과와 관계없이 동작하도록 두 경로를 모두 쓴다. 패널 안 클릭은 `NotchContainerView.mouseDown`이, 메뉴바가 가져가는 클릭은 상시 설치한 전역 `leftMouseDown/Up` 모니터(down·up 모두 노치 rect 안일 때)가 토글한다. 전역 모니터는 다른 앱으로 간 이벤트만 받으므로 한 클릭이 두 번 토글되지 않는다. 바깥 클릭으로 닫는 모니터는 노치 rect 안의 클릭을 무시해, 열린 상태에서 노치를 누르면 닫혔다가 다시 열리는 일을 막는다.

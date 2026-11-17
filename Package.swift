@@ -10,6 +10,7 @@ let package = Package(
         .target(name: "MixerAudio", dependencies: ["MixerCore", "MixerAtomics"]),
         .executableTarget(name: "Mixer", dependencies: ["MixerCore", "MixerAudio"]),
         .executableTarget(name: "tapspike", dependencies: ["MixerAudio"]),
+        .executableTarget(name: "notchspike"),
         .testTarget(name: "MixerCoreTests", dependencies: ["MixerCore"]),
     ]
 )

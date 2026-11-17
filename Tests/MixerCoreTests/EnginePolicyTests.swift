@@ -11,9 +11,14 @@ import Testing
         #expect(EnginePolicy.needsEngine(bundleID: "com.apple.Music", state: AppVolumeState(volume: 1, muted: true)))
     }
 
-    @Test(arguments: ["com.apple.logic10", "com.ableton.live", "us.zoom.xos", "com.hnc.Discord", "com.microsoft.teams2"])
+    @Test(arguments: ["com.apple.logic10", "com.ableton.live", "us.zoom.xos", "com.microsoft.teams2"])
     func 제외_목록_앱은_엔진이_없다(bundleID: String) {
         #expect(EnginePolicy.isExcluded(bundleID))
         #expect(!EnginePolicy.needsEngine(bundleID: bundleID, state: AppVolumeState(volume: 0.2, muted: false)))
+    }
+
+    @Test func Discord는_조절할_수_있다() {
+        #expect(!EnginePolicy.isExcluded("com.hnc.Discord"))
+        #expect(EnginePolicy.needsEngine(bundleID: "com.hnc.Discord", state: AppVolumeState(volume: 0.2, muted: false)))
     }
 }

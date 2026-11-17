@@ -11,7 +11,6 @@ public enum EnginePolicy {
         "com.image-line.flstudio",
         "com.presonus.studioone6",
         "us.zoom.xos",
-        "com.hnc.Discord",
         "com.microsoft.teams",
         "com.microsoft.teams2",
     ]

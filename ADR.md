@@ -54,3 +54,9 @@
 - 측정(자동): 내장 화면 1512×982, 노치 rect (665, 950, 185×32), `safeAreaInsets.top` 32, 메뉴바 높이 33(`frame.maxY - visibleFrame.maxY`). 노치 높이 전체가 메뉴바 높이 안에 들어간다. `notchspike` 패널은 CGWindowList에서 노치 rect와 같은 bounds, 레이어 26(statusBar+1)으로 확인했다.
 - 측정하지 못한 것: 실제 클릭이 높이별로 패널 `mouseDown`과 전역 모니터 중 어디로 가는지. 작업 셸에 손쉬운 사용 권한이 없어 합성 클릭을 보낼 수 없었다. `swift run notchspike 60`으로 마스터가 직접 확인한다.
 - 결정: 결과와 관계없이 동작하도록 두 경로를 모두 쓴다. 패널 안 클릭은 `NotchContainerView.mouseDown`이, 메뉴바가 가져가는 클릭은 상시 설치한 전역 `leftMouseDown/Up` 모니터(down·up 모두 노치 rect 안일 때)가 토글한다. 전역 모니터는 다른 앱으로 간 이벤트만 받으므로 한 클릭이 두 번 토글되지 않는다. 바깥 클릭으로 닫는 모니터는 노치 rect 안의 클릭을 무시해, 열린 상태에서 노치를 누르면 닫혔다가 다시 열리는 일을 막는다.
+
+## 011. Discord는 제외 목록에서 뺀다 (2026-11-18)
+
+- 결정: `com.hnc.Discord`를 `EnginePolicy.excludedBundleIDs`에서 빼서 일반 앱처럼 볼륨을 조절한다. Zoom·Teams·DAW는 계속 제외한다.
+- 이유: 마스터가 Discord 볼륨 조절을 원한다.
+- 감수하는 위험: 볼륨을 100% 밖으로 바꾼 상태에서 Discord 화면 공유(소리 포함)를 하면, Discord가 자기 앱 소리로 인식해 빼던 통화 소리를 Mixer가 대신 재생하므로 상대에게 다시 들어갈 수 있다. 100%면 탭하지 않으므로(ADR 002) 영향이 없다.

@@ -1,0 +1,22 @@
+# 빌드 산출물
+.build/
+/Packages
+*.xcodeproj
+.swiftpm/
+DerivedData/
+dist/
+*.app
+
+# 로컬 환경·시크릿
+.env
+.env.*
+*.local.json
+*.p12
+*.cer
+*.key
+
+# 로그
+*.log
+
+# macOS
+.DS_Store

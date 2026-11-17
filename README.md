@@ -16,14 +16,18 @@ macOS에서 앱별로 소리 크기를 조절하는 메뉴바 앱입니다. MacB
 ## 설치
 
 ```sh
-git clone https://github.com/min2e-crypto/mixer.git
-cd mixer
-scripts/setup-signing.sh   # 처음 한 번: 로그인 키체인에 자체 서명 인증서 생성
-scripts/build-app.sh       # 빌드 후 ~/Applications/Mixer.app 에 설치
-open ~/Applications/Mixer.app
+git clone https://github.com/min2e-crypto/mixer.git && cd mixer && scripts/build-app.sh
 ```
 
-자체 서명 인증서를 쓰는 이유: 시스템 오디오 녹음 권한은 앱 서명에 묶입니다. 같은 인증서로 서명해야 다시 빌드해도 권한이 유지됩니다.
+빌드가 끝나면 `~/Applications/Mixer.app`에 설치되고 바로 실행됩니다.
+
+## 업데이트
+
+```sh
+cd mixer && git pull && scripts/build-app.sh
+```
+
+다시 빌드한 앱은 시스템 오디오 녹음 권한을 한 번 더 묻습니다. 허용하면 됩니다.
 
 ## 처음 실행
 
@@ -52,10 +56,11 @@ pkill -x Mixer
 rm -rf ~/Applications/Mixer.app
 ```
 
-자체 서명 인증서(`Mixer Local Signing`)는 키체인 접근 앱에서 지울 수 있습니다.
+시스템 설정 → 개인정보 보호 및 보안 → 시스템 오디오 녹음, 일반 → 로그인 항목에 남은 Mixer도 지울 수 있습니다.
 
 ## 개발
 
 ```sh
 swift test
+scripts/setup-signing.sh   # 선택: 자체 서명 인증서를 만들면 다시 빌드해도 권한이 유지됩니다
 ```
